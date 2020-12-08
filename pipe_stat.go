@@ -47,6 +47,7 @@ func (pc *pipecmd) stat() error {
 	if err != nil {
 		return xerrors.Wrap(err)
 	}
+	defer seg.Detach()
 
 	m := make(map[uint16]*bstat)
 	seg.Observe(
@@ -56,8 +57,7 @@ func (pc *pipecmd) stat() error {
 			m[index] = &bstat{bytes: bhead.GetBytes(), count: bhead.GetCount(), frees: 0}
 		},
 		func(hindex uint16, uindex uint32, unit *sc.BucketUnit) {
-			l := unit.GetLen()
-			if l == 0 {
+			if unit.GetLen() == 0 {
 				stat, ok := m[hindex]
 				if ok {
 					stat.frees++
@@ -65,8 +65,6 @@ func (pc *pipecmd) stat() error {
 			}
 		},
 	)
-
-	seg.Detach()
 
 	fmt.Fprintf(os.Stderr, "shmkey=%d\n", shmkey)
 	fmt.Fprintln(os.Stderr, "bytes\tfree\ttotal")

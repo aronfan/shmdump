@@ -24,7 +24,7 @@ func main() {
 	if *e != "" {
 		code := int(0)
 		if err := pipe(*e); err != nil {
-			fmt.Printf("%s\n", err.Error())
+			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 			code = int(xerrors.Int(err))
 		}
 		os.Exit(code)

@@ -53,6 +53,32 @@ func (pc *pipecmd) save() error {
 		saveall = true
 	}
 
+	err = sc.IsShmExist(shmkey)
+	if err != nil {
+		return xerrors.Wrap(err)
+	}
+
+	// ensure the Natt is 0
+	ds, err := sc.GetShmDsByKey(shmkey)
+	if err != nil {
+		return xerrors.Wrap(err)
+	}
+	if ds.Natt > 0 {
+		return xerrors.Wrap(fmt.Errorf("natt=%d, should shutdown app attached", ds.Natt)).WithInt(-2)
+	}
+
+	seg, err := sc.NewSegment(shmkey, 0)
+	if err != nil {
+		return xerrors.Wrap(err)
+	}
+
+	err = seg.Attach()
+	if err != nil {
+		return xerrors.Wrap(err)
+	}
+	defer seg.Detach()
+
+	// save
 	if saveall {
 
 	} else {
