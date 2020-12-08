@@ -3,6 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+
+	"github.com/aronfan/xerrors"
 )
 
 var (
@@ -11,15 +14,20 @@ var (
 )
 
 func main() {
+	xerrors.SetSysInternalError(-1)
+
 	flag.Parse()
 	if *h {
 		fmt.Println("share memory dumper")
 		return
 	}
 	if *e != "" {
+		code := int(0)
 		if err := pipe(*e); err != nil {
 			fmt.Printf("%s\n", err.Error())
+			code = int(xerrors.Int(err))
 		}
+		os.Exit(code)
 	} else {
 		// display the interactive ui
 	}

@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	sc "github.com/aronfan/shmcore"
+	"github.com/aronfan/xerrors"
 )
 
 type bstat struct {
@@ -17,34 +18,34 @@ type bstat struct {
 func (pc *pipecmd) stat() error {
 	ok := sc.ResumeEnabled()
 	if !ok {
-		return fmt.Errorf("resume not enabled")
+		return xerrors.Wrap(fmt.Errorf("resume not enabled")).WithInt(-2)
 	}
 	s, ok := pc.params["shmkey"]
 	if !ok {
-		return fmt.Errorf("shmkey not exist")
+		return xerrors.Wrap(fmt.Errorf("shmkey not exist")).WithInt(-2)
 	}
 	if s == "" {
-		return fmt.Errorf("shmkey is empty")
+		return xerrors.Wrap(fmt.Errorf("shmkey is empty")).WithInt(-2)
 	}
 	k, err := strconv.Atoi(s)
 	if err != nil {
-		return err
+		return xerrors.Wrap(err)
 	}
 
 	shmkey := uint32(k)
 	err = sc.IsShmExist(shmkey)
 	if err != nil {
-		return err
+		return xerrors.Wrap(err)
 	}
 
 	seg, err := sc.NewSegment(shmkey, 0)
 	if err != nil {
-		return err
+		return xerrors.Wrap(err)
 	}
 
 	err = seg.Attach()
 	if err != nil {
-		return err
+		return xerrors.Wrap(err)
 	}
 
 	m := make(map[uint16]*bstat)

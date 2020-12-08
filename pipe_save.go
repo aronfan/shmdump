@@ -7,38 +7,39 @@ import (
 	"time"
 
 	sc "github.com/aronfan/shmcore"
+	"github.com/aronfan/xerrors"
 )
 
 func (pc *pipecmd) save() error {
 	ok := sc.ResumeEnabled()
 	if !ok {
-		return fmt.Errorf("resume not enabled")
+		return xerrors.Wrap(fmt.Errorf("resume not enabled")).WithInt(-2)
 	}
 
 	s, ok := pc.params["shmkey"]
 	if !ok {
-		return fmt.Errorf("shmkey not exist")
+		return xerrors.Wrap(fmt.Errorf("shmkey not exist")).WithInt(-2)
 	}
 	if s == "" {
-		return fmt.Errorf("shmkey is empty")
+		return xerrors.Wrap(fmt.Errorf("shmkey is empty")).WithInt(-2)
 	}
 	k, err := strconv.Atoi(s)
 	if err != nil {
-		return err
+		return xerrors.Wrap(err)
 	}
 
 	shmkey := uint32(k)
 	err = sc.IsShmExist(shmkey)
 	if err != nil {
-		return err
+		return xerrors.Wrap(err)
 	}
 
 	s, ok = pc.params["key"]
 	if !ok {
-		return fmt.Errorf("key not exist")
+		return xerrors.Wrap(fmt.Errorf("key not exist")).WithInt(-2)
 	}
 	if s == "" {
-		return fmt.Errorf("key is empty")
+		return xerrors.Wrap(fmt.Errorf("key is empty")).WithInt(-2)
 	}
 
 	file, ok := pc.params["file"]
