@@ -34,23 +34,10 @@ func (pc *pipecmd) save() error {
 		return xerrors.Wrap(err)
 	}
 
-	s, ok = pc.params["key"]
-	if !ok {
-		return xerrors.Wrap(fmt.Errorf("key not exist")).WithInt(-2)
-	}
-	if s == "" {
-		return xerrors.Wrap(fmt.Errorf("key is empty")).WithInt(-2)
-	}
-
 	file, ok := pc.params["file"]
 	if !ok {
 		base := time.Now().Format("20060102_150405")
 		file = fmt.Sprintf("%s.SHM%d", base, shmkey)
-	}
-
-	saveall := false
-	if s == "*" {
-		saveall = true
 	}
 
 	err = sc.IsShmExist(shmkey)
@@ -79,11 +66,6 @@ func (pc *pipecmd) save() error {
 	defer seg.Detach()
 
 	// save
-	if saveall {
-
-	} else {
-
-	}
 
 	fmt.Fprintf(os.Stdout, "%s\n", file)
 
