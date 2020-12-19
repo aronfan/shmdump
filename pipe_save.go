@@ -10,6 +10,11 @@ import (
 	"github.com/aronfan/xerrors"
 )
 
+const (
+	tagHead = "MF20\r\n"
+	tagFoot = "MF20\r\n"
+)
+
 func (pc *pipecmd) save() error {
 	ok := sc.CanObserve()
 	if !ok {
