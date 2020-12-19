@@ -11,9 +11,9 @@ import (
 )
 
 func (pc *pipecmd) save() error {
-	ok := sc.ResumeEnabled()
+	ok := sc.CanObserve()
 	if !ok {
-		return xerrors.Wrap(fmt.Errorf("resume not enabled")).WithInt(-2)
+		return xerrors.Wrap(fmt.Errorf("observe not enabled")).WithInt(-2)
 	}
 
 	s, ok := pc.params["shmkey"]
@@ -29,7 +29,7 @@ func (pc *pipecmd) save() error {
 	}
 
 	shmkey := uint32(k)
-	err = sc.IsShmExist(shmkey)
+	err = sc.Exist(shmkey)
 	if err != nil {
 		return xerrors.Wrap(err)
 	}
@@ -40,7 +40,7 @@ func (pc *pipecmd) save() error {
 		file = fmt.Sprintf("%s.SHM%d", base, shmkey)
 	}
 
-	err = sc.IsShmExist(shmkey)
+	err = sc.Exist(shmkey)
 	if err != nil {
 		return xerrors.Wrap(err)
 	}

@@ -1,4 +1,4 @@
-github.com/aronfan/shmcore v0.0.0-20201208072057-85365559ff56 h1:iXq+4ag9UY2LJ6qjxRekv5rxfRMmRwg7hyQYGR9bmy4=
-github.com/aronfan/shmcore v0.0.0-20201208072057-85365559ff56/go.mod h1:HgPddapK5Dz1cqTEeUM7ynz5rLs/eawCJFsjMnjVLSw=
+github.com/aronfan/shmcore v0.0.0-20201219063433-696e3e98b1de h1:stKJvGYsJ48gxLePIIoAn1PNL/r3RsqQJAe7yNjP6/w=
+github.com/aronfan/shmcore v0.0.0-20201219063433-696e3e98b1de/go.mod h1:HgPddapK5Dz1cqTEeUM7ynz5rLs/eawCJFsjMnjVLSw=
 github.com/aronfan/xerrors v1.0.0 h1:fNb8HYy5p72Ane1x/DX3fQiNeIFL7enbjdPwr9Xjf7E=
 github.com/aronfan/xerrors v1.0.0/go.mod h1:d9vIes2bnlWfu6X5UfXEWO1GUpL8E/YXi8B9HTODpw0=
