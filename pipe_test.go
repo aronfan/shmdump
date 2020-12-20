@@ -86,7 +86,7 @@ func TestSave(t *testing.T) {
 			uLen := unit.GetLen()
 			if uLen > 0 {
 				binary.BigEndian.PutUint32(kvLen, uLen)
-				_, err := w.WriteString(string(kvLen[:]))
+				_, err = w.WriteString(string(kvLen[:]))
 				if err != nil {
 					t.Errorf("%s", err.Error())
 					ok = false
@@ -124,4 +124,9 @@ func TestSave(t *testing.T) {
 		t.Errorf("%s", err.Error())
 		return
 	}
+}
+
+func TestLoad(t *testing.T) {
+	name := "sample.SHM256"
+	t.Logf("%s", name)
 }
