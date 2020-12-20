@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	tagHead = "MF20\r\n"
-	tagFoot = "MF20\r\n"
+	tagHead = "MF20"
+	tagFoot = "MF20"
+	tagLine = "\r\n"
 )
 
 func (pc *pipecmd) save() error {

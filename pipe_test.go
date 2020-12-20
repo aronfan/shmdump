@@ -11,15 +11,17 @@ import (
 	sc "github.com/aronfan/shmcore"
 )
 
+const testkey = uint32(256)
+
 func TestTms(t *testing.T) {
-	shmkey := uint32(255)
+	shmkey := testkey
 	base := time.Now().Format("20060102_150405")
 	file := fmt.Sprintf("%s.SHM%d", base, shmkey)
 	t.Logf("%s", file)
 }
 
 func TestStat(t *testing.T) {
-	cmd := newPipeCommand("shmkey=255&op=stat")
+	cmd := newPipeCommand("shmkey=256&op=stat")
 	t.Logf("%+v", cmd.params)
 	if err := cmd.dispatch(); err != nil {
 		t.Errorf("%s", err.Error())
@@ -28,7 +30,7 @@ func TestStat(t *testing.T) {
 }
 
 func TestSave(t *testing.T) {
-	shmkey := uint32(255)
+	shmkey := testkey
 	base := time.Now().Format("20060102_150405")
 	name := fmt.Sprintf("%s.SHM%d", base, shmkey)
 
@@ -59,17 +61,21 @@ func TestSave(t *testing.T) {
 	defer f.Close()
 
 	w := bufio.NewWriter(f)
-	c := 0
 
 	// write the head
-	n, err := w.WriteString(tagHead)
+	_, err = w.WriteString(tagHead + tagLine)
 	if err != nil {
 		t.Errorf("%s", err.Error())
 		return
 	}
-	c += n
 
-	failed := false
+	err = w.Flush()
+	if err != nil {
+		t.Errorf("%s", err.Error())
+		return
+	}
+
+	ok := true
 	kvLen := make([]byte, 4)
 	seg.Observe(
 		func(_ *sc.SegmentHead) {
@@ -83,31 +89,39 @@ func TestSave(t *testing.T) {
 				_, err := w.WriteString(string(kvLen[:]))
 				if err != nil {
 					t.Errorf("%s", err.Error())
-					failed = true
+					ok = false
 					return
 				}
 				_, err = w.WriteString(string(unit.GetReadSlice()[:]))
 				if err != nil {
 					t.Errorf("%s", err.Error())
-					failed = true
+					ok = false
 					return
 				}
 			}
 		},
 	)
 
-	if !failed {
+	if !ok {
 		return
 	}
 
-	// write the foot
-	n, err = w.WriteString(tagFoot)
+	err = w.Flush()
 	if err != nil {
 		t.Errorf("%s", err.Error())
 		return
 	}
-	c += n
 
-	w.Flush()
-	t.Logf("%d", c)
+	// write the foot
+	_, err = w.WriteString(tagLine + tagFoot)
+	if err != nil {
+		t.Errorf("%s", err.Error())
+		return
+	}
+
+	err = w.Flush()
+	if err != nil {
+		t.Errorf("%s", err.Error())
+		return
+	}
 }
