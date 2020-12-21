@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<sample>
+
+    <shmkv>
+        <bucket bytes="32768" count="10" />
+        <bucket bytes="65536" count="5" />
+    </shmkv>
+
+</sample>
