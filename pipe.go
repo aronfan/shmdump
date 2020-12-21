@@ -35,6 +35,10 @@ func (pc *pipecmd) dispatch() error {
 		return pc.stat()
 	case "save":
 		return pc.save()
+	case "del":
+		return pc.del()
+	case "load":
+		return pc.load()
 	}
 	return nil
 }
