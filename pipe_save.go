@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"time"
 
 	sc "github.com/aronfan/shmcore"
+	kv "github.com/aronfan/shmkv"
 	"github.com/aronfan/xerrors"
 )
 
@@ -17,9 +19,9 @@ const (
 )
 
 func (pc *pipecmd) save() error {
-	ok := sc.CanObserve()
+	ok := sc.CanResume()
 	if !ok {
-		return xerrors.Wrap(fmt.Errorf("observe not enabled")).WithInt(-2)
+		return xerrors.Wrap(fmt.Errorf("resume not enabled")).WithInt(-2)
 	}
 
 	s, ok := pc.params["shmkey"]
@@ -33,23 +35,7 @@ func (pc *pipecmd) save() error {
 	if err != nil {
 		return xerrors.Wrap(err)
 	}
-
 	shmkey := uint32(k)
-	err = sc.Exist(shmkey)
-	if err != nil {
-		return xerrors.Wrap(err)
-	}
-
-	file, ok := pc.params["file"]
-	if !ok {
-		base := time.Now().Format("20060102_150405")
-		file = fmt.Sprintf("%s.SHM%d", base, shmkey)
-	}
-
-	err = sc.Exist(shmkey)
-	if err != nil {
-		return xerrors.Wrap(err)
-	}
 
 	// ensure the Natt is 0
 	ds, err := sc.GetShmDsByKey(shmkey)
@@ -60,20 +46,47 @@ func (pc *pipecmd) save() error {
 		return xerrors.Wrap(fmt.Errorf("natt=%d, should shutdown app attached", ds.Natt)).WithInt(-2)
 	}
 
-	seg, err := sc.NewSegment(shmkey, 0)
+	db := kv.NewDB()
+	err = db.Resume(shmkey)
 	if err != nil {
 		return xerrors.Wrap(err)
 	}
 
-	err = seg.Attach()
-	if err != nil {
-		return xerrors.Wrap(err)
+	// collect the units with length
+	var units unitArray = nil
+	db.Visit(func(_ string, h uint16, u uint32, unit *sc.BucketUnit) bool {
+		ul := unitLen{H: h, U: u, L: unit.GetLen()}
+		units = append(units, ul)
+		return true
+	})
+	sort.Sort(units)
+	if true {
+		for i := 0; i < len(units); i++ {
+			unit := units[i]
+			fmt.Fprintf(os.Stderr, "hindex=%d, uindex=%d, length=%d\n", unit.H, unit.U, unit.L)
+		}
 	}
-	defer seg.Detach()
 
 	// save
+	file, ok := pc.params["file"]
+	if !ok {
+		base := time.Now().Format("20060102_150405")
+		file = fmt.Sprintf("%s.SHM%d", base, shmkey)
+	}
 
 	fmt.Fprintf(os.Stdout, "%s\n", file)
 
 	return nil
 }
+
+type unitLen struct {
+	H uint16
+	U uint32
+	L uint32
+}
+
+type unitArray []unitLen
+
+func (s unitArray) Len() int           { return len(s) }
+func (s unitArray) Less(i, j int) bool { return s[i].L < s[j].L }
+func (s unitArray) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
