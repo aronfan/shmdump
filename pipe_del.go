@@ -36,8 +36,7 @@ func (pc *pipecmd) del() error {
 		return xerrors.Wrap(fmt.Errorf("natt=%d, should shutdown app attached", ds.Natt)).WithInt(-2)
 	}
 
-	err = sc.DelShmByKey(shmkey)
-	if err != nil {
+	if err = sc.DelShmByKey(shmkey); err != nil {
 		return xerrors.Wrap(err)
 	}
 

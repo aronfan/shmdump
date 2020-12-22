@@ -33,8 +33,7 @@ func (pc *pipecmd) stat() error {
 	}
 
 	shmkey := uint32(k)
-	err = sc.Exist(shmkey)
-	if err != nil {
+	if err = sc.Exist(shmkey); err != nil {
 		return xerrors.Wrap(err)
 	}
 
@@ -43,8 +42,7 @@ func (pc *pipecmd) stat() error {
 		return xerrors.Wrap(err)
 	}
 
-	err = seg.Attach()
-	if err != nil {
+	if err = seg.Attach(); err != nil {
 		return xerrors.Wrap(err)
 	}
 	defer seg.Detach()
