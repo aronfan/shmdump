@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/binary"
 	"fmt"
+	"os"
 	"strconv"
 
 	sc "github.com/aronfan/shmcore"
@@ -67,6 +69,61 @@ func (pc *pipecmd) load() error {
 }
 
 func load(fileName string, db *kv.DB) error {
+	f, err := os.Open(fileName)
+	if err != nil {
+		return xerrors.Wrap(err)
+	}
+	defer f.Close()
+
+	// read the head and validate
+	headLen := int64(len(tagHead))
+	head := make([]byte, headLen)
+	_, err = f.Read(head)
+	if err != nil {
+		return xerrors.Wrap(err)
+	}
+	if string(head[:]) != tagHead {
+		return xerrors.Wrap(fmt.Errorf("head=%s, not equal %s", string(head[:]), tagHead)).WithInt(-2)
+	}
+
+	// read the foot and validate
+	footLen := int64(len(tagFoot))
+	foot := make([]byte, footLen)
+	offsetEnd, err := f.Seek(-footLen, os.SEEK_END)
+	if err != nil {
+		return xerrors.Wrap(err)
+	}
+	_, err = f.Read(foot)
+	if string(foot[:]) != tagFoot {
+		return xerrors.Wrap(fmt.Errorf("foot=%s, not equal %s", string(foot[:]), tagFoot)).WithInt(-2)
+	}
+
+	// read the units
+	f.Seek(headLen, os.SEEK_SET)
+	offsetBegin, err := f.Seek(0, os.SEEK_CUR)
+
+	curr := offsetBegin
+	kvLen := make([]byte, 4)
+	for {
+		if curr+4 >= offsetEnd {
+			break
+		}
+		f.Read(kvLen)
+		unitLen := binary.BigEndian.Uint32(kvLen)
+		if curr+int64(unitLen) >= offsetEnd {
+			break
+		}
+		if unitLen == 0 {
+			continue
+		}
+		unit := make([]byte, unitLen)
+		_, err = f.Read(unit)
+		if err != nil {
+			return xerrors.Wrap(err)
+		}
+		db.SetWithSlice(unit)
+	}
+
 	return nil
 }
 
